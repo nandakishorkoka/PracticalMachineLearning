@@ -192,7 +192,13 @@ hr {
 <p>Initial Setup - Load the Caret package; Make sure all dependencies are installed  a</p>
 
 <pre><code class="r">library(caret) 
-set.seed(9) 
+</code></pre>
+
+<pre><code>## Loading required package: lattice
+## Loading required package: ggplot2
+</code></pre>
+
+<pre><code class="r">set.seed(9) 
 </code></pre>
 
 <p>Load the data sets </p>
@@ -237,17 +243,111 @@ highcor &lt;- findCorrelation(dcor, cutoff = 0.90)
 training_new &lt;- training_new[,-highcor]
 </code></pre>
 
-<p>Train the model. Using Gradient boosting as it provides better flexibility in tweaking the model. Limiting the number to allow processing on small machines.<br/>
-&ldquo;{r] 
-#fitControl &lt;- trainControl(method = &quot;repeatedcv&rdquo;,number = 10,repeats = 10)
-fitControl &lt;- trainControl(number=1)
-model = train(classe ~ ., data = training_new, method = &ldquo;gbm&rdquo;,  verbose = TRUE, trControl = fitControl)</p>
+<p>Train the model. Using Gradient boosting as it provides better flexibility in tweaking the model. Limiting the number to allow processing on small machines.  </p>
 
-<pre><code>
-In-Sample accuracy: 
+<pre><code class="r">fitControl &lt;- trainControl(number=1)
+model = train(classe ~ ., data = training_new, method = &quot;gbm&quot;,  verbose = TRUE, trControl = fitControl)
+</code></pre>
 
-```r
-training_new_pred &lt;- predict(model, training_new) 
+<pre><code>## Loading required package: gbm
+## Loading required package: survival
+## Loading required package: splines
+## 
+## Attaching package: &#39;survival&#39;
+## 
+## The following object is masked from &#39;package:caret&#39;:
+## 
+##     cluster
+## 
+## Loading required package: parallel
+## Loaded gbm 2.1
+## Loading required package: plyr
+</code></pre>
+
+<pre><code>## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.1235
+##      2        1.5260            -nan     0.1000    0.0814
+##      3        1.4713            -nan     0.1000    0.0620
+##      4        1.4296            -nan     0.1000    0.0523
+##      5        1.3931            -nan     0.1000    0.0497
+##      6        1.3605            -nan     0.1000    0.0443
+##      7        1.3302            -nan     0.1000    0.0377
+##      8        1.3063            -nan     0.1000    0.0299
+##      9        1.2859            -nan     0.1000    0.0287
+##     10        1.2663            -nan     0.1000    0.0290
+##     20        1.1302            -nan     0.1000    0.0158
+##     40        0.9803            -nan     0.1000    0.0091
+##     60        0.8863            -nan     0.1000    0.0072
+##     80        0.8167            -nan     0.1000    0.0038
+##    100        0.7628            -nan     0.1000    0.0031
+##    120        0.7179            -nan     0.1000    0.0026
+##    140        0.6789            -nan     0.1000    0.0024
+##    150        0.6621            -nan     0.1000    0.0022
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.1748
+##      2        1.4957            -nan     0.1000    0.1132
+##      3        1.4197            -nan     0.1000    0.1006
+##      4        1.3552            -nan     0.1000    0.0769
+##      5        1.3048            -nan     0.1000    0.0661
+##      6        1.2624            -nan     0.1000    0.0575
+##      7        1.2258            -nan     0.1000    0.0485
+##      8        1.1934            -nan     0.1000    0.0498
+##      9        1.1616            -nan     0.1000    0.0398
+##     10        1.1351            -nan     0.1000    0.0383
+##     20        0.9458            -nan     0.1000    0.0173
+##     40        0.7468            -nan     0.1000    0.0107
+##     60        0.6275            -nan     0.1000    0.0089
+##     80        0.5389            -nan     0.1000    0.0026
+##    100        0.4776            -nan     0.1000    0.0038
+##    120        0.4290            -nan     0.1000    0.0042
+##    140        0.3877            -nan     0.1000    0.0032
+##    150        0.3699            -nan     0.1000    0.0021
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.2077
+##      2        1.4729            -nan     0.1000    0.1461
+##      3        1.3784            -nan     0.1000    0.1188
+##      4        1.3022            -nan     0.1000    0.0947
+##      5        1.2422            -nan     0.1000    0.0871
+##      6        1.1862            -nan     0.1000    0.0671
+##      7        1.1417            -nan     0.1000    0.0659
+##      8        1.0998            -nan     0.1000    0.0597
+##      9        1.0630            -nan     0.1000    0.0523
+##     10        1.0299            -nan     0.1000    0.0516
+##     20        0.8079            -nan     0.1000    0.0217
+##     40        0.5846            -nan     0.1000    0.0105
+##     60        0.4660            -nan     0.1000    0.0055
+##     80        0.3903            -nan     0.1000    0.0042
+##    100        0.3317            -nan     0.1000    0.0033
+##    120        0.2893            -nan     0.1000    0.0039
+##    140        0.2548            -nan     0.1000    0.0025
+##    150        0.2398            -nan     0.1000    0.0018
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.2098
+##      2        1.4767            -nan     0.1000    0.1466
+##      3        1.3831            -nan     0.1000    0.1120
+##      4        1.3104            -nan     0.1000    0.0865
+##      5        1.2534            -nan     0.1000    0.0821
+##      6        1.2019            -nan     0.1000    0.0613
+##      7        1.1623            -nan     0.1000    0.0709
+##      8        1.1176            -nan     0.1000    0.0618
+##      9        1.0772            -nan     0.1000    0.0481
+##     10        1.0469            -nan     0.1000    0.0563
+##     20        0.8153            -nan     0.1000    0.0364
+##     40        0.6016            -nan     0.1000    0.0132
+##     60        0.4882            -nan     0.1000    0.0069
+##     80        0.4085            -nan     0.1000    0.0029
+##    100        0.3535            -nan     0.1000    0.0022
+##    120        0.3079            -nan     0.1000    0.0020
+##    140        0.2730            -nan     0.1000    0.0013
+##    150        0.2593            -nan     0.1000    0.0015
+</code></pre>
+
+<p>In-Sample accuracy: </p>
+
+<pre><code class="r">training_new_pred &lt;- predict(model, training_new) 
 print(confusionMatrix(training_new_pred, training_new$classe))
 </code></pre>
 

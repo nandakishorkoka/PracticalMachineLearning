@@ -56,8 +56,7 @@ training_new <- training_new[,-highcor]
 ``` 
 
 Train the model. Using Gradient boosting as it provides better flexibility in tweaking the model. Limiting the number to allow processing on small machines.  
-```{r] 
-#fitControl <- trainControl(method = "repeatedcv",number = 10,repeats = 10)
+```{r} 
 fitControl <- trainControl(number=1)
 model = train(classe ~ ., data = training_new, method = "gbm",  verbose = TRUE, trControl = fitControl)
 ```
