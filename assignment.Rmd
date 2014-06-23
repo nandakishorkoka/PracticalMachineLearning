@@ -5,18 +5,81 @@ date: "June 22, 2014"
 output: html_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Initial Setup - Load the Caret package; Make sure all dependencies are installed  a
 
 ```{r}
-summary(cars)
+library(caret) 
+set.seed(9) 
+```
+Load the data sets 
+
+```{r}
+hlmtrain <- read.csv("data/pml-training.csv", header=TRUE)
+hlmtest <- read.csv("data/pml-testing.csv", header=TRUE)
 ```
 
-You can also embed plots, for example:
-
-```{r, echo=FALSE}
-plot(cars)
+Partition the training data for training and cross validation 
+```{r} 
+inTrain <- createDataPartition (y=hlmtrain$classe, p = 0.80, list=FALSE )
+training <- hlmtrain[inTrain,]
+testing <- hlmtrain[-inTrain,]
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Remove variables that have near zero variance 
+
+```{r}
+nzv <- nearZeroVar(hlmtrain)
+training <- training[, -nzv] 
+testing <- testing[, -nzv]
+```
+
+Filter for only numerical columns 
+```{r}
+nfs = which(lapply(training,class) %in% c('numeric'))
+preproc <- preProcess(training[,nfs], method=c('bagImpute'))
+training_new <- cbind(training$classe, predict(preproc, training[,nfs]))
+testing_new <- cbind(testing$classe, predict(preproc, testing[,nfs]))
+```
+
+Correct the label 
+```{r} 
+names(training_new)[1] <- "classe"
+names(testing_new)[1] <- "classe"
+```
+
+Check for variable with high correlation and remove these 
+```{r} 
+nfs2 = which(lapply(training_new,class) %in% c('numeric'))
+dcor <- cor(training_new[,nfs2])
+highcor <- findCorrelation(dcor, cutoff = 0.90)
+training_new <- training_new[,-highcor]
+``` 
+
+Train the model. Using Gradient boosting as it provides better flexibility in tweaking the model. Limiting the number to allow processing on small machines.  
+```{r] 
+#fitControl <- trainControl(method = "repeatedcv",number = 10,repeats = 10)
+fitControl <- trainControl(number=1)
+model = train(classe ~ ., data = training_new, method = "gbm",  verbose = TRUE, trControl = fitControl)
+```
+
+In-Sample accuracy: 
+```{r} 
+training_new_pred <- predict(model, training_new) 
+print(confusionMatrix(training_new_pred, training_new$classe))
+``` 
+
+Out-of-Sample accuracy: 
+```{r} 
+testing_new_pred <- predict(model, testing_new) 
+print(confusionMatrix(testing_new_pred, testing_new$classe))
+```
+
+Final Test: 
+```{r} 
+hlmtest <- hlmtest[, -nzv]
+final_test <- predict(preproc, hlmtest[,nfs])
+final_res <- predict(model, final_test)
+print (final_res ) 
+```
+
+
